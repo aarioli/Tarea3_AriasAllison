@@ -11,6 +11,8 @@ execute:
   message: false
 ---
 
+# Respuestas R
+
 ```{r}
 #| include: false
 library(dplyr)
@@ -40,11 +42,41 @@ res.1c <- sum(alertas.fijas$alerta)
 
 ```{r}
 #| echo: false
+
 cat(
-  "RESULTADO.1A = ", res.1a, "\n",
-  "RESULTADO.1B = ", res.1b, "\n",
-  "RESULTADO.1C = ", res.1c, "\n",
+  "RESULTADO_1A = ", res.1a, "\n",
+  "RESULTADO_1B = ", res.1b, "\n",
+  "RESULTADO_1C = ", res.1c, "\n",
   sep = ""
 )
+```
+
+## Gráfico 1
+
+```{r}
+#| label: fig-ej1
+#| fig-cap: "Serie diaria de transacciones en 2025 con días de alerta resaltados."
+#| echo: false
+
+grafico.ej1 <- ggplot(alertas.parametros, aes(x = fecha, y = n.tx)) +
+  geom_line(color = "#4A6FE3", linewidth = 0.5) +
+  geom_point(
+    data = filter(alertas.parametros, alerta),
+    aes(x = fecha, y = n.tx),
+    color = "#D32F2F",
+    size = 2.5
+  ) +
+  labs(
+    title = "Transacciones diarias y alertas por ventana móvil (2025)",
+    subtitle = paste0("Ventana = ", ventana, " días | k = ", k, " | Total alertas = ", res.1a),
+    x = "Fecha",
+    y = "Número de transacciones diarias"
+  ) +
+  theme_minimal()
+
+dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
+ggsave("info/figuras/ej1_alertas.png", plot = grafico.ej1, width = 8, height = 4, dpi = 300)
+
+grafico.ej1
 ```
 
