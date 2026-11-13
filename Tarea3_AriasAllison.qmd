@@ -24,19 +24,30 @@ source("cod/funciones_tarea3.R")
 
 datos <- read_csv2("data/transacciones_2025.csv")
 parametros <- read_csv2("config/parametros_tarea3.csv")
+cantones <- read_csv("data/cantones.csv")
 
-# Extraer parámetros personales
+# Ejercicio 1:
 ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
 k <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
 
-# Ejercicio 1: tus parámetros
 alertas.parametros <- alerta.movil(datos, ventana = ventana, k.alerta = k)
+alertas.fijas <- alerta.movil(datos, ventana = 7, k.alerta = 2)
+
 res.1a <- sum(alertas.parametros$alerta)
 res.1b <- as.character(alertas.parametros$fecha[alertas.parametros$alerta][1])
-
-# Ejercicio 1: parámetros comunes (ventana = 7, k.alerta = 2)
-alertas.fijas <- alerta.movil(datos, ventana = 7, k.alerta = 2)
 res.1c <- sum(alertas.fijas$alerta)
+
+# Ejercicio 2:
+canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
+
+montos.canal <- datos$monto_crc[datos$canal == canal.benford]
+ej2.parametros <- benford.canton(datos, canal = canal.benford, cantones = cantones)
+ej2.web <- benford.canton(datos, canal = "Web", cantones = cantones)
+
+res.2a <- sprintf("%.4f", benford.mad(montos.canal))
+res.2b <- ej2.parametros$canton[1]
+res.2c <- sum(ej2.parametros$mad > 0.015)
+res.2d <- ej2.web$canton[1]
 ```
 
 
@@ -47,6 +58,10 @@ cat(
   "RESULTADO_1A = ", res.1a, "\n",
   "RESULTADO_1B = ", res.1b, "\n",
   "RESULTADO_1C = ", res.1c, "\n",
+  "RESULTADO_2A = ", res.2a, "\n",
+  "RESULTADO_2B = ", res.2b, "\n",
+  "RESULTADO_2C = ", res.2c, "\n",
+  "RESULTADO_2D = ", res.2d, "\n",
   sep = ""
 )
 ```
