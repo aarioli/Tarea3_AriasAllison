@@ -95,3 +95,39 @@ ggsave("info/figuras/ej1_alertas.png", plot = grafico.ej1, width = 8, height = 4
 grafico.ej1
 ```
 
+
+## Gráfico 2
+
+```{r}
+#| label: fig-ej2
+#| fig-cap: "Distribución observada del primer dígito en el canal Web frente a la proporción teórica de la Ley de Benford."
+#| echo: false
+
+benford.canal <- tibble(monto = montos.canal) |>
+  filter(!is.na(monto), monto > 0) |>
+  mutate(digito = as.integer(monto %/% 10^floor(log10(monto)))) |>
+  count(digito, name = "n") |>
+  mutate(
+    p.obs = n / sum(n),
+    benford.teorica = log10(1 + 1 / digito)
+  )
+
+grafico.ej2 <- ggplot(benford.canal, aes(x = factor(digito), y = p.obs)) +
+  geom_col(fill = "#2B6CB0", width = 0.65, alpha = 0.85) +
+  geom_line(aes(y = benford.teorica, group = 1), color = "#C53030", linewidth = 1) +
+  geom_point(aes(y = benford.teorica), color = "#C53030", size = 2.5) +
+  scale_y_continuous(labels = scales::percent_format(accuracy = 1)) +
+  labs(
+    title = paste("Distribución del primer dígito vs. Ley de Benford — Canal", canal.benford),
+    subtitle = paste0("MAD global = ", res.2a, " (conformidad cercana; línea roja = teórico)"),
+    x = "Primer dígito significativo",
+    y = "Proporción"
+  ) +
+  theme_minimal(base_size = 12)
+
+dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
+ggsave("info/figuras/ej2_benford.png", plot = grafico.ej2, width = 7, height = 4.2, dpi = 300)
+
+grafico.ej2
+```
+Los 4 cantones con valores altos de MAD ($\text{MAD} > 0.015$) tienen muy pocas transacciones registradas, por lo que se puede esperar que los porcentajes se desajustan de forma natural por el azar, sin que sea señal de fraude.
