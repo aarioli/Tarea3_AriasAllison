@@ -27,6 +27,7 @@ parametros <- read_csv2("config/parametros_tarea3.csv")
 cantones <- read_csv("data/cantones.csv")
 
 # Ejercicio 1:
+
 ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
 k <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
 
@@ -38,9 +39,10 @@ res.1b <- as.character(alertas.parametros$fecha[alertas.parametros$alerta][1])
 res.1c <- sum(alertas.fijas$alerta)
 
 # Ejercicio 2:
-canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
 
+canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
 montos.canal <- datos$monto_crc[datos$canal == canal.benford]
+
 ej2.parametros <- benford.canton(datos, canal = canal.benford, cantones = cantones)
 ej2.web <- benford.canton(datos, canal = "Web", cantones = cantones)
 
@@ -48,6 +50,19 @@ res.2a <- sprintf("%.4f", benford.mad(montos.canal))
 res.2b <- ej2.parametros$canton[1]
 res.2c <- sum(ej2.parametros$mad > 0.015)
 res.2d <- ej2.web$canton[1]
+
+# Ejercicio 3:
+
+tasa.anual <- as.numeric(parametros$valor[parametros$parametro == "tasa.anual"])
+canal.interes <- parametros$valor[parametros$parametro == "canal.interes"]
+
+ej3.parametros <- valor.acumulado(datos, tasa.anual = tasa.anual, canal = canal.interes)
+ej3.app <- valor.acumulado(datos, tasa.anual = 0.06, canal = "App")
+
+res.3a <- sprintf("%.2f", ej3.parametros$va)
+res.3b <- sprintf("%.2f", ej3.parametros$interes)
+res.3c <- sprintf("%.2f", ej3.app$va)
+
 ```
 
 
@@ -62,6 +77,9 @@ cat(
   "RESULTADO_2B = ", res.2b, "\n",
   "RESULTADO_2C = ", res.2c, "\n",
   "RESULTADO_2D = ", res.2d, "\n",
+  "RESULTADO_3A = ", res.3a, "\n",
+  "RESULTADO_3B = ", res.3b, "\n",
+  "RESULTADO_3C = ", res.3c, "\n",
   sep = ""
 )
 ```
