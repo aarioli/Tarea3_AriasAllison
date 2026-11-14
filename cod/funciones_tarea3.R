@@ -74,3 +74,30 @@ benford.canton <- function(df, canal, cantones) {
   
   return(df)
 }
+
+
+#--------------------------------
+# Función: Valor acumulado con interés compuesto
+# Recibe: un dataframe con transacciones (df), la tasa efectiva anual (tasa.anual) y el nombre del canal a analizar (canal).
+# Devuelve: una lista con tabla (mes, monto, factor), tasa.mensual, valor acumulado e interes.
+#--------------------------------
+
+valor.acumulado <- function(df, tasa.anual, canal) {
+  tasa.mensual <- (1 + tasa.anual)^(1 / 12) - 1
+  tabla <- df %>%
+    filter(canal == .env$canal) %>%
+    mutate(mes = as.integer(format(as.Date(fecha), "%m"))) %>%
+    summarise(monto = sum(monto_crc), .by = mes) %>%
+    arrange(mes) %>%
+    mutate(factor = (1 + tasa.mensual)^(12 - mes))
+  
+  VA <- sum(tabla$monto * tabla$factor)
+  interes <- VA - sum(tabla$monto)
+  
+  return(list(
+    tabla = tabla,
+    tasa.mensual = tasa.mensual,
+    va = VA,
+    interes = interes
+  ))
+}
