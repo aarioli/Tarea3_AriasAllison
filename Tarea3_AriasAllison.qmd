@@ -2,6 +2,8 @@
 title: "Tarea 3: Proyecto R + Git + Excel"
 subtitle: "CA-0204 Herramientas de Ciencia de Datos I — II Ciclo 2026"
 author: "Allison Arias Olivares"
+date: today
+lang: es
 format:
   html:
     embed-resources: true
@@ -19,6 +21,7 @@ library(dplyr)
 library(zoo)
 library(readr)
 library(ggplot2)
+library(tidyr)
 
 source("cod/funciones_tarea3.R")
 
@@ -27,6 +30,7 @@ parametros <- read_csv2("config/parametros_tarea3.csv")
 cantones <- read_csv("data/cantones.csv")
 
 # Ejercicio 1:
+
 ventana <- as.numeric(parametros$valor[parametros$parametro == "ventana"])
 k <- as.numeric(parametros$valor[parametros$parametro == "k.alerta"])
 
@@ -38,9 +42,10 @@ res.1b <- as.character(alertas.parametros$fecha[alertas.parametros$alerta][1])
 res.1c <- sum(alertas.fijas$alerta)
 
 # Ejercicio 2:
-canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
 
+canal.benford <- parametros$valor[parametros$parametro == "canal.benford"]
 montos.canal <- datos$monto_crc[datos$canal == canal.benford]
+
 ej2.parametros <- benford.canton(datos, canal = canal.benford, cantones = cantones)
 ej2.web <- benford.canton(datos, canal = "Web", cantones = cantones)
 
@@ -48,6 +53,19 @@ res.2a <- sprintf("%.4f", benford.mad(montos.canal))
 res.2b <- ej2.parametros$canton[1]
 res.2c <- sum(ej2.parametros$mad > 0.015)
 res.2d <- ej2.web$canton[1]
+
+# Ejercicio 3:
+
+tasa.anual <- as.numeric(parametros$valor[parametros$parametro == "tasa.anual"])
+canal.interes <- parametros$valor[parametros$parametro == "canal.interes"]
+
+ej3.parametros <- valor.acumulado(datos, tasa.anual = tasa.anual, canal = canal.interes)
+ej3.app <- valor.acumulado(datos, tasa.anual = 0.06, canal = "App")
+
+res.3a <- sprintf("%.2f", ej3.parametros$va)
+res.3b <- sprintf("%.2f", ej3.parametros$interes)
+res.3c <- sprintf("%.2f", ej3.app$va)
+
 ```
 
 
@@ -62,6 +80,9 @@ cat(
   "RESULTADO_2B = ", res.2b, "\n",
   "RESULTADO_2C = ", res.2c, "\n",
   "RESULTADO_2D = ", res.2d, "\n",
+  "RESULTADO_3A = ", res.3a, "\n",
+  "RESULTADO_3B = ", res.3b, "\n",
+  "RESULTADO_3C = ", res.3c, "\n",
   sep = ""
 )
 ```
@@ -131,3 +152,54 @@ ggsave("info/figuras/ej2_benford.png", plot = grafico.ej2, width = 7, height = 4
 grafico.ej2
 ```
 Los 4 cantones con valores altos de MAD ($\text{MAD} > 0.015$) tienen muy pocas transacciones registradas, por lo que se puede esperar que los porcentajes se desajustan de forma natural por el azar, sin que sea señal de fraude.
+
+## Gráfico 3
+
+```{r}
+#| label: fig-ej3
+#| fig-cap: "Monto mensual depositado frente a su valor acumulado al 31 de diciembre."
+#| echo: false
+
+meses.etiquetas <- c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                     "Jul", "Ago", "Sep", "Oct", "Nov", "Dic")
+
+datos.graf3 <- ej3.parametros$tabla |>
+  mutate(
+    mes.nom = factor(meses.etiquetas[mes], levels = meses.etiquetas),
+    va.mes = monto * factor
+  ) |>
+  select(mes.nom, `Monto depositado` = monto, `Valor al 31-dic` = va.mes) |>
+  pivot_longer(cols = -mes.nom, names_to = "serie", values_to = "colones") |>
+  mutate(serie = factor(serie, levels = c("Monto depositado", "Valor al 31-dic")))
+
+grafico.ej3 <- ggplot(datos.graf3, aes(x = mes.nom, y = colones / 1e9, fill = serie)) +
+  geom_col(position = position_dodge(width = 0.65), width = 0.55) +
+  scale_fill_manual(
+    values = c(
+      "Monto depositado" = "grey75",
+      "Valor al 31-dic" = "#1A73E8"
+    )
+  ) +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.08))) +
+  labs(
+    title = paste("Los primeros meses capitalizan más interés al cierre — Canal", canal.interes),
+    subtitle = paste0("Monto mensual (gris) vs. valor acumulado al 31-dic (azul) | Tasa anual = ", tasa.anual * 100, "%"),
+    x = NULL,
+    y = "Miles de millones de CRC",
+    fill = NULL
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor = element_blank(),
+    plot.title.position = "plot",
+    plot.title = element_text(face = "bold", size = 12),
+    legend.position = "top",
+    legend.justification = "left"
+  )
+
+dir.create("info/figuras", recursive = TRUE, showWarnings = FALSE)
+ggsave("info/figuras/ej3_valor_acumulado.png", plot = grafico.ej3, width = 8, height = 4, dpi = 300)
+
+grafico.ej3
+```
