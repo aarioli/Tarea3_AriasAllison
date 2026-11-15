@@ -1,7 +1,7 @@
 ---
 title: "Tarea 3: Proyecto R + Git + Excel"
-subtitle: "CA-0204 Herramientas de Ciencia de Datos I — II Ciclo 2026"
-author: "Allison Arias Olivares"
+subtitle: "CA-0204 Herramientas de Ciencia de Datos I — II Ciclo 2026 | [Repositorio en GitHub](https://github.com/aarioli/Tarea3_AriasAllison)"
+author: "Allison Arias Olivares · Carné C4C751"
 date: today
 lang: es
 format:
